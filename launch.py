@@ -12,11 +12,12 @@ Steps:
 
 def main():
     # directory = "developer" #path
-    directory = "directorypath"
+    # print("chicken")
+    # directory = "C:\Users\Alex\Desktop\search_engine\cs121-search-engine\DEV"
+    directory = "DEV"
     invertedIndex = InvertedIndex(directory)
     invertedIndex.indexFiles()
-
-    
+    print("End of program!!!!!!")
 
 if __name__ == "__main__":
     main()
