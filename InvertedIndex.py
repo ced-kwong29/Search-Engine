@@ -1,6 +1,7 @@
 from collections import defaultdict
 from email.policy import default
 import nltk
+import nltk.stem
 import os
 import json
 from bs4 import BeautifulSoup, SoupStrainer
@@ -8,6 +9,12 @@ from bs4 import BeautifulSoup, SoupStrainer
 Inverted Index = map with token as key and list of corresponding postings as values
 Postings = [document name/id token was found in, tf-idf score (for MS1, add only the term frequency)]
 '''
+
+# 50 % ram
+# when we hit the threshold
+# begin offloading from disk
+# ram usage back to 0
+# repeat
 
 class InvertedIndex:
     def __init__(self, directory):
@@ -53,13 +60,14 @@ class InvertedIndex:
         print("FILE PATH: " + filePath)
         with open(filePath, "r") as file:
             loadedFile = json.load(file)
-            url = loadedFile["url"]
+            # url = loadedFile["url"]
             content = loadedFile["content"]
-            encoding = loadedFile["encoding"]
+            # encoding = loadedFile["encoding"]
             tokenList = self.tokenizeContent(content)
             # self.computeWordDoc(tokenList)
             
     def tokenizeContent(self, content):
+        stemmer = nltk.stem.snowball.EnglishStemmer()
         content = BeautifulSoup(content, "lxml").get_text()
         tokens = []
         matchString = "abcdefghijklmnopqrstuvwxyzABCDEDFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -76,8 +84,10 @@ class InvertedIndex:
                 finStr += chars
                 i += 1
             if finStr:
-                for strings in [s.lower() for s in finStr.split()]: #lowrcase strings in split
-                    tokens.append(strings)
+                for string in [s.lower() for s in finStr.split()]: #lowrcase strings in split
+                    if string.isalpha():
+                        string = stemmer.stem(string)
+                    tokens.append(string)
         print(tokens)
         return tokens
 
