@@ -9,15 +9,16 @@ Steps:
 4. show user results               
 '''
 
-
 def main():
-    # directory = "developer" #path
-    # print("chicken")
-    # directory = "C:\Users\Alex\Desktop\search_engine\cs121-search-engine\DEV"
     directory = "DEV"
     invertedIndex = InvertedIndex(directory)
     invertedIndex.indexFiles()
     print("End of program!!!!!!")
+    print("HERE ARE THE STATS")
+    print("# of docs: " + str(invertedIndex.docID))
+    print("# of tokens: " + str(invertedIndex.wordCounter))
+
+    invertedIndex.printMap(invertedIndex.map)
 
 if __name__ == "__main__":
     main()
