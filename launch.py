@@ -1,3 +1,9 @@
+# rtighiou - 88255446
+# wmejiahi - 18183195
+# cwkwong -  11234388
+# alexanvl - 22558269
+
+
 from msilib.schema import Directory
 from InvertedIndex import InvertedIndex
 
@@ -13,7 +19,7 @@ def main():
     directory = "DEV"
     invertedIndex = InvertedIndex(directory)
     invertedIndex.indexFiles()
-    print("End of program!!!!!!")
+    #print("End of program!!!!!!")
     print("HERE ARE THE STATS")
     print("# of docs: " + str(invertedIndex.docID))
     print("# of tokens: " + str(invertedIndex.wordCounter))

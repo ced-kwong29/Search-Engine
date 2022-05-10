@@ -27,15 +27,11 @@ class InvertedIndex:
         self.tbool1, self.tbool2 = True, True
         self.mergeList = []      # this is the ONLY way to write a <crossout>set</crossout> list
         self.wordCounter = 0
-
-
-    #sets 3 thresholds to offload based on number of directories
-    def countDirectoryThreshold(self):
-        # sum(os.path.isdir(i) for i in os.listdir(self.dir))
         self.dirLength = len(next(os.walk(self.dir))[1]) #also threshold 3
         self.threshold1 = self.dirLength // 3
         self.threshold2 = self.threshold1 * 2
         self.threshold3 = self.dirLength
+
         
 
     def mergeFiles(self):
@@ -44,21 +40,16 @@ class InvertedIndex:
             self.mergeMap(self.map, next_file)
 
 
-    def offload(self, name=None):
-        
-        
-        if not name:
-            name = "index"+str(self.dump_counter)
-            print("NO NAME")
+    def offload(self):
+        name = f"index{self.dump_counter}.json"
         with open(name, "w") as file:
             json.dump(self.map, file)
             self.wordCounter += len(self.map.keys())
             self.map = {}
-        if not name:
-            self.mergeList.append(name)
-            self.dump_counter += 1
-            self.memThreshold += self.initial_memory // 3
-            print(f"Counter: {self.dump_counter} & Initial memory: {self.initial_memory} & Current memory: {self.checkMemoryUsage()}")
+        self.mergeList.append(name)
+        self.dump_counter += 1
+        self.memThreshold += self.initial_memory // 3
+        #print(f"Counter: {self.dump_counter} & Initial memory: {self.initial_memory} & Current memory: {self.checkMemoryUsage()} & File name: {name}")
 
 
     def checkMemoryUsage(self):
@@ -87,17 +78,16 @@ class InvertedIndex:
 
 
     def indexFiles(self):
-        self.countDirectoryThreshold()
         for folderName in os.listdir(self.dir):
             folder = os.path.join(self.dir, folderName)
             self.processFolder(folder)
         self.offload()          #final offload for after files processed, offloading remaining files past last threshold
         self.mergeFiles()
-        self.printMap(self.map)
+        # self.printMap(self.map)
 
         
     def processFolder(self, folderPath):
-        print("FOLDER PATH: " + folderPath)
+        #print("FOLDER PATH: " + folderPath)
         for fileName in os.listdir(folderPath):
             filePath = os.path.join(folderPath, fileName)
             self.processFile(filePath)
@@ -108,15 +98,13 @@ class InvertedIndex:
         with open(filePath, "r") as file:
             loadedFile = json.load(file)
             content = loadedFile["content"]
-            # memory = self.checkMemoryUsage()
-            #print("MEMORY: " + str(memory))
-            if self.tbool1 and self.foldersVisited >= self.threshold1:
+            if self.tbool1 and (self.foldersVisited >= self.threshold1):
                 self.offload()
                 self.tbool1 = False
-            elif self.tbool2 and self.foldersVisited >= self.threshold2:
+            elif self.tbool2 and (self.foldersVisited >= self.threshold2):
                 self.offload()
                 self.tbool2 = False
-            elif 100 - self.checkMemoryUsage() >= self.initial_memory + self.memThreshold:
+            elif (100 - self.checkMemoryUsage()) >= (self.initial_memory + self.memThreshold):
                 self.offload()
 
             content = BeautifulSoup(content, "lxml").get_text()
