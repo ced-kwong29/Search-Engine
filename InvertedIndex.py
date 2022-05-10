@@ -61,22 +61,6 @@ class InvertedIndex:
 
     def checkMemoryUsage(self):
         return psutil.virtual_memory()[2]
-        
-
-    # Supplementary querying
-    # Milestone #
-    def andQuery(self, fL, sL):
-        temp = []
-        ptrF, ptrS = 0, 0
-        n1, n2 = len(fL) - 1, len(sL) - 1
-        while ptrF != n1 and ptrS != n2:
-            if fL[ptrF] < sL[ptrS]:
-                ptrF += 1
-            elif fL[ptrF] > sL[ptrS]:
-                ptrS += 1
-            else:
-                temp.append(fL[ptrF])
-        return temp
 
 
     #Increments the document id to keep track of current file
