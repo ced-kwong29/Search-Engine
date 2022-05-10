@@ -31,6 +31,7 @@ class InvertedIndex:
         self.threshold1 = self.dirLength // 3
         self.threshold2 = self.threshold1 * 2
         self.threshold3 = self.dirLength
+        self.docDict = {}
 
         
 
@@ -41,7 +42,7 @@ class InvertedIndex:
 
 
     def offload(self):
-        name = f"index{self.dump_counter}.json"
+        name = f"chicken{self.dump_counter}.json"
         with open(name, "w") as file:
             json.dump(self.map, file)
             self.wordCounter += len(self.map.keys())
@@ -50,6 +51,12 @@ class InvertedIndex:
         self.dump_counter += 1
         self.memThreshold += self.initial_memory // 3
         #print(f"Counter: {self.dump_counter} & Initial memory: {self.initial_memory} & Current memory: {self.checkMemoryUsage()} & File name: {name}")
+
+    #offloads document-map auxilliary structure to disk
+    def offloadDocDict(self):
+        name = "DocDictionary.json"
+        with open(name, "w") as file:
+            json.dump(self.docDict, file)
 
 
     def checkMemoryUsage(self):
@@ -83,11 +90,11 @@ class InvertedIndex:
             self.processFolder(folder)
         self.offload()          #final offload for after files processed, offloading remaining files past last threshold
         self.mergeFiles()
-        # self.printMap(self.map)
+        self.offloadDocDict() #offloads auxilliary structure holding document urls
 
         
     def processFolder(self, folderPath):
-        #print("FOLDER PATH: " + folderPath)
+        print("FOLDER PATH: " + folderPath)
         for fileName in os.listdir(folderPath):
             filePath = os.path.join(folderPath, fileName)
             self.processFile(filePath)
@@ -98,6 +105,9 @@ class InvertedIndex:
         with open(filePath, "r") as file:
             loadedFile = json.load(file)
             content = loadedFile["content"]
+            url = loadedFile["url"]
+            self.docDict[self.docID] = url
+
             if self.tbool1 and (self.foldersVisited >= self.threshold1):
                 self.offload()
                 self.tbool1 = False

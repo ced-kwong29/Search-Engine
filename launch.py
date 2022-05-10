@@ -19,12 +19,10 @@ def main():
     directory = "DEV"
     invertedIndex = InvertedIndex(directory)
     invertedIndex.indexFiles()
-    #print("End of program!!!!!!")
     print("HERE ARE THE STATS")
     print("# of docs: " + str(invertedIndex.docID))
     print("# of tokens: " + str(invertedIndex.wordCounter))
-
-    invertedIndex.printMap(invertedIndex.map)
+    print("DOC DICT: " + str(invertedIndex.docDict))
 
 if __name__ == "__main__":
     main()
