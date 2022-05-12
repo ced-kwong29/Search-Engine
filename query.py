@@ -1,5 +1,5 @@
 from msilib.schema import Directory
-from InvertedIndex import InvertedIndex
+from tokenizer import tokenizeContent
 
 # Supplementary querying
 # takes in two Lists that contain document IDs for which the word was found in
@@ -19,21 +19,46 @@ def andQuery(fL, sL):
             intersection.append(fL[ptrF])
     return intersection
 
+    # loop through chicken indexes
+    #   turn to dictionary
+    #       if query is in dictionary
+    #           return the dictionary keys associated with the query
+    def getDocsWithQuery(self, query):
+        pass
+    
+    
+class Query:
+    def __init__(self, userInput):
+        self.query = tokenizeContent(userInput)
+        
+    def startQuery(self):
+        if len(self.query == 1):
+            self.singleQuery()
+        elif len(self.query) >= 2:
+            self.multipleQuery()
+        else:
+            print("WEIRD INPUT")
+        
+    def singleQuery(self):
+        print("SINGLE QUERY")
+        
+    def multipleQuery(self):
+        # AND querying
+        intersectingDocs = []
+        
+        
+        
+    
+        
+    
 
 def main():
-    query = input("ENTER QUERY: ")
-    print(f"QUERY {query}")
-    query_list = query.split()
-    if len(query_list) == 1:
-        # single query
-        pass
-    elif len(query_list) >= 2:
-        # AND querying
-        final_list = []
-        for words_to_query in query_list:
-            pass
-    else:
-        print("Exception")
+    # userInput = input("ENTER QUERY: ")
+    # query = Query(userInput)
+    # query.startQuery()
+    
+    
+    
 
 if __name__ == "__main__":
     main()

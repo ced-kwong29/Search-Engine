@@ -7,6 +7,7 @@ import json
 from bs4 import BeautifulSoup, SoupStrainer
 import psutil
 import re
+from tokenizer import tokenizeContent
 
 '''
 Inverted Index = map with token as key and list of corresponding postings as values
@@ -58,6 +59,10 @@ class InvertedIndex:
         with open(name, "w") as file:
             json.dump(self.docDict, file)
 
+    def offloadMap(self):
+        name = "InvertedIndex.json"
+        with open(name, "w") as file:
+            json.dump(self.map, file)
 
     def checkMemoryUsage(self):
         return psutil.virtual_memory()[2]
@@ -75,6 +80,7 @@ class InvertedIndex:
         self.offload()          #final offload for after files processed, offloading remaining files past last threshold
         self.mergeFiles()
         self.offloadDocDict() #offloads auxilliary structure holding document urls
+        self.offloadMap()
 
         
     def processFolder(self, folderPath):
@@ -106,28 +112,7 @@ class InvertedIndex:
             temp = self.computeWordDoc(tokenList)
             self.updateMap(temp)
 
-        
-    def tokenizeContent(self, content):
-        stemmer = nltk.stem.snowball.EnglishStemmer()
-        tokens = []
-        matchString = "abcdefghijklmnopqrstuvwxyzABCDEDFGHIJKLMNOPQRSTUVWXYZ0123456789"
-        content_list = content.split('\n')
-        for line in content_list:
-            finStr = ""
-            i = 0
-            for chars in line:
-                if not(chars in matchString):
-                    chars = ' '
-                    if finStr and i and finStr[i-1] == ' ':
-                        chars = ''
-                        i -= 1
-                finStr += chars
-                i += 1
-            if finStr:
-                for strings in [s.lower() for s in finStr.split() if s.isalnum()]:     #lowercase strings in split
-                    #if strings not in STOPWORDS:
-                    tokens.append(stemmer.stem(strings))
-        return tokens
+    
 
 
     def printMap(self, map):
