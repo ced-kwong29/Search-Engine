@@ -18,7 +18,7 @@ def test(file):
     while file:
         temp = file.readline()
         counter += len(temp)
-        print(counter)
+        print(counter, temp)
         if end(temp):
             break
         if ifWord(temp):
