@@ -6,59 +6,98 @@ from tokenizer import tokenizeContent
 # returns the intersection of the list
 # the 2 words were found to exist in the returned list's documents
 # Milestone 2
-def andQuery(fL, sL): 
-    intersection = []
-    ptrF, ptrS = 0, 0
-    n1, n2 = len(fL) - 1, len(sL) - 1
-    while ptrF != n1 and ptrS != n2:
-        if fL[ptrF] < sL[ptrS]:
-            ptrF += 1
-        elif fL[ptrF] > sL[ptrS]:
-            ptrS += 1
-        else:
-            intersection.append(fL[ptrF])
-    return intersection
-
-    # loop through chicken indexes
-    #   turn to dictionary
-    #       if query is in dictionary
-    #           return the dictionary keys associated with the query
-    def getDocsWithQuery(self, query):
-        pass
+import cheeseJSON
     
     
 class Query:
-    def __init__(self, userInput):
+    def __init__(self, userInput, d):
         self.query = tokenizeContent(userInput)
+        self.aux = d
         
     def startQuery(self):
-        if len(self.query == 1):
-            self.singleQuery()
+        if len(self.query) == 1:
+            t = self.singleQuery(self.query[0])
+            print(t)
         elif len(self.query) >= 2:
-            self.multipleQuery()
+            t = self.multipleQuery(self.query)
+            print(t)
         else:
-            print("WEIRD INPUT")
+            print("Invalid input.")
+
+
+    def andQuery(self, fL, sL): 
+        intersection = []
+        ptrF, ptrS = 0, 0
+        n1, n2 = len(fL) - 1, len(sL) - 1
+        while ptrF < n1 or ptrS < n2:
+            if int(fL[ptrF]) < int(sL[ptrS]) and ptrF < n1:
+                ptrF += 1
+            elif int(fL[ptrF]) > int(sL[ptrS]) and ptrS < n2:
+                ptrS += 1
+            elif int(fL[ptrF]) == int(sL[ptrS]):
+                intersection.append(fL[ptrF])
+                if ptrF < n1:
+                    ptrF += 1
+                if ptrS < n2:
+                    ptrS += 1
+            elif ptrF == n1 and ptrS < n2:
+                ptrS += 1
+            elif ptrS == n2 and ptrF < n1:
+                ptrF += 1
+        return intersection
+
+
+    def jumpHelper(self, word):
+        return cheeseJSON.jumpPos(file, self.aux, word)
         
-    def singleQuery(self):
-        print("SINGLE QUERY")
+
+    def singleQuery(self, word):
+        aux = self.jumpHelper(word)
+        docs = sorted(aux.items(), key=lambda x : -x[1])[:5]
+        returnDocs = []
+        for doc in docs:
+            returnDocs.append(doc[0])
+        return returnDocs
         
-    def multipleQuery(self):
-        # AND querying
+
+    def multipleQuery(self, words):
         intersectingDocs = []
-        
-        
-        
-    
-        
+        for word in words:
+            if len(intersectingDocs) > 1:
+                tempD = {}
+                first = intersectingDocs.pop(0)
+                second = intersectingDocs.pop(0)
+                d = self.andQuery(list(first.keys()), list(second.keys()))
+                for values in d:
+                    tempD[values] = (first[values] + second[values]) // 2
+                intersectingDocs.append(tempD)
+            else:
+                intersectingDocs.append(self.jumpHelper(word))
+        while len(intersectingDocs) > 1:
+            tempD = {}
+            first = intersectingDocs.pop(0)
+            second = intersectingDocs.pop(0)
+            d = self.andQuery(list(first.keys()), list(second.keys()))
+            for values in d:
+                tempD[values] = (first[values] + second[values]) // 2
+            intersectingDocs.append(tempD)
+        docs = sorted(intersectingDocs[0].items(), key=lambda x : -x[1])[:5]
+        returnDocs = []
+        for doc in docs:
+            returnDocs.append(doc[0])
+        return returnDocs
     
 
-def main():
-    # userInput = input("ENTER QUERY: ")
-    # query = Query(userInput)
-    # query.startQuery()
+def main(d):
+    while True:
+        userInput = input("Search for: ")
+        if userInput == "q":
+            break
+        query = Query(userInput, d)
+        query.startQuery()
     
     
-    
-
 if __name__ == "__main__":
-    main()
+    file = open("II.json")
+    d = cheeseJSON.test(file)
+    main(d)

@@ -13,28 +13,37 @@ def end(word):
 def test(file):
     aux = dict()
     temp = file.readline()
-    counter = len(temp)
-    print("Counter", counter)
+    counter = len(temp) + 1
     while file:
         temp = file.readline()
-        counter += len(temp)
-        print(counter, temp)
+        if ifWord(temp[:-4]):
+            aux[temp[:-4].strip().strip(':').strip('"')] = counter
+        counter += len(temp) + 1
         if end(temp):
             break
-        if ifWord(temp):
-            aux[temp.strip().strip(':').strip('"')] = counter
         while True:
             temp = file.readline()
-            counter += len(temp)
+            counter += len(temp) + 1
             if end(temp):
                 break
     return aux
 
-def jumpPos(file):
+def jumpPos(file, d, word):
     file.seek(0, 0)
-    file.seek(19)
-    print(file.readline())
-    return
+    try:
+        file.seek(d[word])
+        file.readline()
+        dStr = "{"
+        for lines in file:
+            if lines.strip().startswith('}'):
+                dStr += lines.strip().strip(',')
+                break
+            else:
+                dStr += lines
+        return eval(dStr)
+    except KeyError as err:
+        print(f"Error, key: {err} invalid.")
+    return {}
 
 if __name__ == "__main__":
     f = open("test.json")
