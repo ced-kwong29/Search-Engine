@@ -45,7 +45,7 @@ class InvertedIndex:
     def offload(self):
         name = f"chicken{self.dump_counter}.json"
         with open(name, "w") as file:
-            json.dump(self.map, file)
+            json.dump(self.map, file, indent=1)
             self.wordCounter += len(self.map.keys())
             self.map = {}
         self.mergeList.append(name)
@@ -57,12 +57,12 @@ class InvertedIndex:
     def offloadDocDict(self):
         name = "DocDictionary.json"
         with open(name, "w") as file:
-            json.dump(self.docDict, file)
+            json.dump(self.docDict, file, indent=1)
 
     def offloadMap(self):
         name = "InvertedIndex.json"
         with open(name, "w") as file:
-            json.dump(self.map, file)
+            json.dump(self.map, file, indent=1)
 
     def checkMemoryUsage(self):
         return psutil.virtual_memory()[2]

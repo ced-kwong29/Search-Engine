@@ -131,3 +131,4 @@ dmypy.json
 # big folder
 DEV/
 TEST/
+temp/

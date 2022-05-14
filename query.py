@@ -7,6 +7,7 @@ from tokenizer import tokenizeContent
 # the 2 words were found to exist in the returned list's documents
 # Milestone 2
 import cheeseJSON
+import json
     
     
 class Query:
@@ -17,12 +18,27 @@ class Query:
     def startQuery(self):
         if len(self.query) == 1:
             t = self.singleQuery(self.query[0])
-            print(t)
+            self.grabURLs(t)
+
         elif len(self.query) >= 2:
             t = self.multipleQuery(self.query)
-            print(t)
+            self.grabURLs(t)
         else:
             print("Invalid input.")
+            return
+
+    def grabURLs(self, records):
+        with open("DocDictionary.json", 'r') as f:
+            temp = json.load(f)
+        urls = []
+        print(f"\nTOP {len(records)} for word{'s' if len(self.query) > 1 else ''} {self.query}")
+        for values in records:
+            t = temp.get(values, 0)
+            if t:
+                urls.append(t)
+                print(t)
+        print()
+        return urls
 
 
     def andQuery(self, fL, sL): 

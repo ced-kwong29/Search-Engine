@@ -1,7 +1,7 @@
 import nltk
 
 #tokenizes and stems content
-def tokenizeContent(self, content):
+def tokenizeContent(content):
     stemmer = nltk.stem.snowball.EnglishStemmer()
     tokens = []
     matchString = "abcdefghijklmnopqrstuvwxyzABCDEDFGHIJKLMNOPQRSTUVWXYZ0123456789"
