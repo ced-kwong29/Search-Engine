@@ -132,3 +132,14 @@ dmypy.json
 DEV/
 TEST/
 temp/
+
+# big files
+InvertedIndex.json
+chicken1.json
+chicken2.json
+chicken3.json
+DocDictionary.json
+
+# random files
+CS 121 hw3 milestone 2 - Google Docs.pdf
+

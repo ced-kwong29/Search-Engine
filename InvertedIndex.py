@@ -108,7 +108,7 @@ class InvertedIndex:
                 self.offload()
 
             content = BeautifulSoup(content, "lxml").get_text()
-            tokenList = self.tokenizeContent(content)
+            tokenList = tokenizeContent(content)
             temp = self.computeWordDoc(tokenList)
             self.updateMap(temp)
 

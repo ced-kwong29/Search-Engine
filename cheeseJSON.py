@@ -1,3 +1,4 @@
+import json
 
 def ifWord(word):
     wB = False
@@ -40,7 +41,7 @@ def jumpPos(file, d, word):
                 break
             else:
                 dStr += lines
-        return eval(dStr)
+        return json.loads(dStr)
     except KeyError as err:
         print(f"Error, key: {err} invalid.")
     return {}
