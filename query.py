@@ -2,7 +2,7 @@ from msilib.schema import Directory
 from tokenizer import tokenizeContent
 import cProfile
 import pstats
-
+from collections import defaultdict
 # Supplementary querying
 # takes in two Lists that contain document IDs for which the word was found in
 # returns the intersection of the list
@@ -19,9 +19,13 @@ class Query:
         self.aux = d
         self.N = len(set(self.aux.values()))
 
-    def tfxidf(self, df):
+    def idf(self, df):
         return math.log((self.N/df))
 
+    def tf(self, df):
+        for value in df.values():
+            value = 1 + math.log(value)
+        return df
 
         
     def startQuery(self):
@@ -90,23 +94,46 @@ class Query:
         #return tf * idf
 
 
-    def ranking(self, words, docs):
-        pass
+    def ranking(self, words, tfDict, idfDict):
+        #calculate cosine similarity of each doc then return ranking
+        #calculate query tfidfs
+        qlist = []
+        for word in words:
+            tf = words.count(word)
+            idf = 1 #only one query, appears for this one query
+            qlist.append(tf*idf)
+        ##now get cosine for each doc
+        #gather doc tfidfs for each word
+        dlist = []
+
+    
+    def cosineScore(self, cosineD, freqDoc, freqTerm, allDocs, validQueries, lengthDoc):
+        length = [lengthDoc[i] for i in range(max(allDocs))]
+        scores = [0 for _ in range(max(allDocs))]
+        for term in validQueries:
+            weightTerm = freqTerm[term]
+            for doc in allDocs:
+                scores[doc] += freqDoc[doc][term] * weightTerm
+        for d in range(len(scores)):
+            scores[d] /= length[d]
+        print(scores)
+        return scores
 
 
     def multipleQuery(self, words):
-        # contained = {}
-        # for word in words:
-        #     contained[word] = len(self.jumpHelper(word))
         intersectingDocs = []
-        ranking = {}
-        #print(contained)
+        rankingTF = {}
+        rankingIDF = {}
+        cosineD = {}
+        freqTerm = {}
+        freqDoc = defaultdict(lambda : defaultdict())
+        allDocs = set()
+        validQueries = []
+        lengthDoc = defaultdict(int)
         for word in sorted(words, key=lambda x : -len(x)):
-            #print("Current word: ", word)
             if len(intersectingDocs) > 1:
                 tempD = {}
                 firstDoc = intersectingDocs.pop(0)
-                # print(f'first Doc keys: {list(firstDoc.keys())}\n frequency: {list(firstDoc.values())}')
                 secondDoc = intersectingDocs.pop(0)
                 tempIntersectingDocs = self.andQuery(list(firstDoc.keys()), list(secondDoc.keys()))
                 for doc in tempIntersectingDocs:
@@ -114,11 +141,21 @@ class Query:
                 intersectingDocs.append(tempD)
             else:
                 curr = self.jumpHelper(word) 
-                # {'0':40, :'1' 80, '2':30, ...}
                 if curr:
+                    cosineD[word] = curr
+                    for j in curr:
+                        # {'0': {'water':80, 'fire':30}}
+                        freqDoc[j][word] = curr[j]
+                        allDocs.add(j)
+                        lengthDoc[j] += curr[j]
+
+                    validQueries.append(word)
+                    freqTerm[word] = sum(curr.values())
+                    # {'water':480, 'fire':800}
+                    # {'0':40, :'1' 80, '2':30, ...}
                     intersectingDocs.append(curr)
-                    # rankingTF[word] = self.tf(curr)
-                    # rankingIDF[word] = self.idf(len(curr))
+                    rankingTF[word] = self.tf(curr)
+                    rankingIDF[word] = self.idf(len(curr))
         while len(intersectingDocs) > 1:
             tempD = {}
             firstDoc = intersectingDocs.pop(0)
@@ -127,13 +164,14 @@ class Query:
             for doc in tempIntersectingDocs:
                 tempD[doc] = (firstDoc[doc] + secondDoc[doc]) // 2
             intersectingDocs.append(tempD)
-        print(intersectingDocs)
-        print(ranking)
-        docs = sorted(intersectingDocs[0].items(), key=lambda x : -x[1])
-        returnDocs = []
-        for doc in docs:
-            returnDocs.append(doc[0])
-        return ranking(returnDocs)
+        result = self.cosineScore(cosineD, freqDoc, freqTerm, allDocs, validQueries, lengthDoc)
+        finalScore = defaultdict(int)
+        for k, v in intersectingDocs[0].items():
+            finalScore[k] = result[k] / v
+        # [{docID#:freq#}, {...}, ...]
+        docs = sorted(finalScore.items(), key=lambda x : -x[1])
+        return docs
+        # return ranking(docs, rankingTF, rankingIDF)
     
 
 def main(d):
