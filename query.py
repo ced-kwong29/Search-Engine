@@ -108,15 +108,18 @@ class Query:
 
     
     def cosineScore(self, cosineD, freqDoc, freqTerm, allDocs, validQueries, lengthDoc):
-        length = [lengthDoc[i] for i in range(max(allDocs))]
-        scores = [0 for _ in range(max(allDocs))]
+        # print(f'freqDoc = {freqDoc}')
+        allDocsInt = [int(i) for i in allDocs] 
+        length = [lengthDoc[i] for i in range(max(allDocsInt))]
+        scores = [0 for _ in range(max(allDocsInt)+1)]
         for term in validQueries:
             weightTerm = freqTerm[term]
-            for doc in allDocs:
-                scores[doc] += freqDoc[doc][term] * weightTerm
-        for d in range(len(scores)):
-            scores[d] /= length[d]
-        print(scores)
+            for doc in allDocsInt:
+                # print(f'freqDoc = {freqDoc[str(doc)]}')
+                scores[doc] += freqDoc[str(doc)][term] * weightTerm
+        for d in range(len(scores)-1):
+            if length[d] > 0:
+                scores[d] /= length[d]
         return scores
 
 
@@ -126,7 +129,9 @@ class Query:
         rankingIDF = {}
         cosineD = {}
         freqTerm = {}
-        freqDoc = defaultdict(lambda : defaultdict())
+        # def def_value():
+        #     return {}
+        freqDoc = defaultdict(lambda : defaultdict(int))
         allDocs = set()
         validQueries = []
         lengthDoc = defaultdict(int)
@@ -140,22 +145,23 @@ class Query:
                     tempD[doc] = (firstDoc[doc] + secondDoc[doc]) // 2
                 intersectingDocs.append(tempD)
             else:
-                curr = self.jumpHelper(word) 
-                if curr:
-                    cosineD[word] = curr
-                    for j in curr:
+                termFrequencyCurrentWord = self.jumpHelper(word)
+                # if the word exists in the inverted index
+                if termFrequencyCurrentWord:
+                    cosineD[word] = termFrequencyCurrentWord
+                    for j in termFrequencyCurrentWord:
                         # {'0': {'water':80, 'fire':30}}
-                        freqDoc[j][word] = curr[j]
+                        # {'0' : {None, {'water':80}} is not good
+                        freqDoc[j][word] = termFrequencyCurrentWord[j]
                         allDocs.add(j)
-                        lengthDoc[j] += curr[j]
-
+                        lengthDoc[j] += termFrequencyCurrentWord[j] 
                     validQueries.append(word)
-                    freqTerm[word] = sum(curr.values())
+                    freqTerm[word] = sum(termFrequencyCurrentWord.values())
                     # {'water':480, 'fire':800}
                     # {'0':40, :'1' 80, '2':30, ...}
-                    intersectingDocs.append(curr)
-                    rankingTF[word] = self.tf(curr)
-                    rankingIDF[word] = self.idf(len(curr))
+                    intersectingDocs.append(termFrequencyCurrentWord)
+                    rankingTF[word] = self.tf(termFrequencyCurrentWord)
+                    rankingIDF[word] = self.idf(len(termFrequencyCurrentWord))
         while len(intersectingDocs) > 1:
             tempD = {}
             firstDoc = intersectingDocs.pop(0)
@@ -167,7 +173,7 @@ class Query:
         result = self.cosineScore(cosineD, freqDoc, freqTerm, allDocs, validQueries, lengthDoc)
         finalScore = defaultdict(int)
         for k, v in intersectingDocs[0].items():
-            finalScore[k] = result[k] / v
+            finalScore[int(k)] = result[int(k)] / v
         # [{docID#:freq#}, {...}, ...]
         docs = sorted(finalScore.items(), key=lambda x : -x[1])
         return docs
@@ -182,8 +188,12 @@ def main(d):
         #     break
         # userInput = "The goal of our work is to exploit a distributed power-aware middleware framework to coordinate low-level architectural"
         # userInput = "pool water"
-        userInput = "The gaol of our wordk is to expliot a distribbbuted pooper-aware middlewaire framewwwwork to coordinate low-level architectural"
+        # userInput = "The gaol of our wordk is to expliot a distribbbuted pooper-aware middlewaire framewwwwork to coordinate low-level architectural"
         
+        
+        # userInput = "dsffawefawefawef zxcvzxcvzxcvzxc chicken"
+        # userInput = "The University of California, Irvine (UCI) is engaged in a multi-year campuswide strategic expansion and seeks to hire midcareer faculty (advanced assistant, tenured associate, to early full professors) in the area of information and computer sciences who have distinguished publication records and upward trajectories in their research profiles.  </p>\n<p>Qualified applicants with interests in artificial intelligence, computer vision, machine learning, natural language processing, bioinformatics and related topics are encouraged to apply for these positions. UCI has a very active group of faculty in these areas including Anima Anandkumar, Pierre Baldi, Rina Dechter, Charless Fowlkes, Alex Ihler, Rick Lathrop, Eric Mjolsness, Sameer Singh, Padhraic Smyth, Erik Sudderth, and Xiaohui Xie &#8211; primarily in the computer science department, with strong interdisciplinary connections to departments such as cognitive science, informatics, and statistics. </p>\n<p>Recently celebrating its 50th anniversary, UCI is part of the premier public university system in the world. It was recently named by U.S. News &#038; World Report as a top ten public university and by the New York Times as No. 1 among U.S. universities that do the most for low-income students. UCI is located in one of the world\u2019s safest and most economically vibrant communities and is Orange County\u2019s second-largest employer, contributing $4.8 billion annually to the local economy.</p>\n<p>The University of California, Irvine is an Equal Opportunity/Affirmative Action Employer advancing inclusive excellence. All qualified applicants will receive consideration for employment without regard to race,"
+        # userInput = "The University of California, Irvine (UCI) is engaged in a multi-year campuswide strategic expansion and seeks to hire midcareer faculty (advanced assistant, tenured associate, to early full professors) in the area of information and computer sciences who have distinguished publication records and upward trajectories in their research profiles.  Qualified applicants with interests in artificial intelligence, computer vision, machine learning, natural language processing, bioinformatics and related topics are encouraged to apply for these positions. UCI has a very active group of faculty in these areas including Anima Anandkumar, Pierre Baldi, Rina Dechter, Charless Fowlkes, Alex Ihler, Rick Lathrop, Eric Mjolsness, Sameer Singh, Padhraic Smyth, Erik Sudderth, and Xiaohui Xie &#8211; primarily in the computer science department, with strong interdisciplinary connections to departments such as cognitive science, informatics, and statistics.Recently celebrating its 50th anniversary, UCI is part of the premier public university system in the world. It was recently named by U.S. News &#038; World Report as a top ten public university and by the New York Times as No. 1 among U.S. universities that do the most for low-income students. UCI is located in one of the world 2019s safest and most economically vibrant communities and is Orange County2019s second-largest employer, contributing $4.8 billion annually to the local economy.The University of California, Irvine is an Equal Opportunity/Affirmative Action Employer advancing inclusive excellence. All qualified applicants will receive consideration for employment without regard to race,"
         
         profiler = cProfile.Profile()
         profiler.enable()

@@ -29,7 +29,7 @@ def test(file):
                 break
     return aux
 
-def jumpPos(file, d, word):
+def jumpPos(file, d, word): 
     file.seek(0, 0)
     try:
         file.seek(d[word])
@@ -41,10 +41,11 @@ def jumpPos(file, d, word):
                 break
             else:
                 dStr += lines
-        return json.loads(dStr)
+        dictWord = json.loads(dStr)
+        return dictWord
     except KeyError as err:
         print(f"Error, key: {err} invalid.")
-    return {}
+        return {}
 
 if __name__ == "__main__":
     f = open("test.json")
